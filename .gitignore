@@ -1,1 +1,4 @@
 .idea
+/go_build_main_go.exe
+/tron-address-generate.exe
+/tronaddr.log

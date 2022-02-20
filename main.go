@@ -54,8 +54,10 @@ func generateNewKey() (addr string) {
 
 	if generateCont%100 == 0 {
 		fmt.Println("******************* New Key Using ECDSA *******************", generateCont)
-		generateCont++
+
 	}
+
+	generateCont++
 
 	// Generate a new key using the ECDSA library
 	// #1
