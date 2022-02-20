@@ -6,10 +6,11 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/gcash/bchd/bchec"
 	"github.com/sasaxie/go-client-api/common/base58"
 	"golang.org/x/crypto/sha3"
 	"math/big"
+	"strings"
 )
 
 /*
@@ -19,7 +20,12 @@ import (
 
 func main() {
 	// Use the ECDSA crypto library to generate the Tron Address
-	generateNewKey()
+	for true {
+		addr := generateNewKey()
+		if strings.Count(addr, "8") > 6 {
+			break
+		}
+	}
 
 	// Using a hex of a private key extract the Tron Address
 	addressFromKey("F43EBCC94E6C257EDBE559183D1A8778B2D5A08040902C0F0A77A3343A1D0EA5") // TWVRXXN5tsggjUCDmqbJ4KxPdJKQiynaG6
@@ -27,15 +33,15 @@ func main() {
 	addressFromKey("e36ace9ad7486f6149790e2a95a2a53fe57454b7a083093a0049457baebbabcf") // TKfSBdtyTikWF5XCRdxqNktif3UShzS4ke
 }
 
-func generateNewKey() {
+func generateNewKey() (addr string) {
 	fmt.Println("******************* New Key Using ECDSA *******************")
 	// Generate a new key using the ECDSA library
 	// #1
-	key, _ := ecdsa.GenerateKey(btcec.S256(), rand.Reader)
+	key, _ := ecdsa.GenerateKey(bchec.S256(), rand.Reader)
 	priv := key.D.Bytes()
 	pubX := key.X.Bytes()
 	pubY := key.Y.Bytes()
-	pub := append(pubX,pubY...)
+	pub := append(pubX, pubY...)
 
 	// #2
 	hash := sha3.NewLegacyKeccak256()
@@ -59,6 +65,9 @@ func generateNewKey() {
 	fmt.Println("tronAddr: (" + fmt.Sprintf("%d", len(tronAddr)) + ") " + tronAddr)
 
 	fmt.Println("******************* New Key Using ECDSA *******************")
+
+	return string(tronAddr)
+
 }
 
 func addressFromKey(keyStr string) {
@@ -67,7 +76,7 @@ func addressFromKey(keyStr string) {
 	// Build the Private Key and extract the Public Key
 	keyBytes, _ := hex.DecodeString(keyStr)
 	key := new(ecdsa.PrivateKey)
-	key.PublicKey.Curve = btcec.S256()
+	key.PublicKey.Curve = bchec.S256()
 	key.D = new(big.Int).SetBytes(keyBytes)
 	key.PublicKey.X, key.PublicKey.Y = key.PublicKey.Curve.ScalarBaseMult(keyBytes)
 
