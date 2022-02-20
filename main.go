@@ -9,32 +9,54 @@ import (
 	"github.com/gcash/bchd/bchec"
 	"github.com/sasaxie/go-client-api/common/base58"
 	"golang.org/x/crypto/sha3"
+	"log"
+	"os"
+
 	"math/big"
-	"strings"
 )
 
 /*
 	Tron Address Algorithm
 	https://developers.tron.network/docs/account
 */
+var (
+	Log *log.Logger
+)
 
 func main() {
 	// Use the ECDSA crypto library to generate the Tron Address
+	var logpath = "./tronaddr.log"
+	var file, err1 = os.Create(logpath)
+
+	if err1 != nil {
+		panic(err1)
+	}
+	Log = log.New(file, "", log.LstdFlags|log.Lshortfile)
+	Log.Println("LogFile : " + logpath)
+
 	for true {
 		addr := generateNewKey()
-		if strings.Count(addr, "8") > 6 {
+		subAddr := addr[len(addr)-8:]
+		if subAddr == "88888888" {
 			break
 		}
 	}
 
 	// Using a hex of a private key extract the Tron Address
-	addressFromKey("F43EBCC94E6C257EDBE559183D1A8778B2D5A08040902C0F0A77A3343A1D0EA5") // TWVRXXN5tsggjUCDmqbJ4KxPdJKQiynaG6
-	addressFromKey("a24c37ec71cfc4046f617b5011f932c994c863e20ad3b8a20b21a4de943279dd") // TXA74MA1z4669rLBKmJB16AvHxppTLJCdT
-	addressFromKey("e36ace9ad7486f6149790e2a95a2a53fe57454b7a083093a0049457baebbabcf") // TKfSBdtyTikWF5XCRdxqNktif3UShzS4ke
+	//addressFromKey("F43EBCC94E6C257EDBE559183D1A8778B2D5A08040902C0F0A77A3343A1D0EA5") // TWVRXXN5tsggjUCDmqbJ4KxPdJKQiynaG6
+	//addressFromKey("a24c37ec71cfc4046f617b5011f932c994c863e20ad3b8a20b21a4de943279dd") // TXA74MA1z4669rLBKmJB16AvHxppTLJCdT
+	//addressFromKey("e36ace9ad7486f6149790e2a95a2a53fe57454b7a083093a0049457baebbabcf") // TKfSBdtyTikWF5XCRdxqNktif3UShzS4ke
 }
 
+var generateCont = 0
+
 func generateNewKey() (addr string) {
-	fmt.Println("******************* New Key Using ECDSA *******************")
+
+	if generateCont%100 == 0 {
+		fmt.Println("******************* New Key Using ECDSA *******************", generateCont)
+		generateCont++
+	}
+
 	// Generate a new key using the ECDSA library
 	// #1
 	key, _ := ecdsa.GenerateKey(bchec.S256(), rand.Reader)
@@ -61,10 +83,12 @@ func generateNewKey() (addr string) {
 	rawAddr := append(addr41, checksum...)
 	tronAddr := base58.Encode(rawAddr)
 
-	fmt.Println("Private key: (" + fmt.Sprintf("%d", len(priv)) + ") " + fmt.Sprintf("%x", priv))
-	fmt.Println("tronAddr: (" + fmt.Sprintf("%d", len(tronAddr)) + ") " + tronAddr)
-
-	fmt.Println("******************* New Key Using ECDSA *******************")
+	subAddr := tronAddr[len(tronAddr)-8:]
+	if subAddr == "88888888" {
+		Log.Println("Private key: (" + fmt.Sprintf("%d", len(priv)) + ") " + fmt.Sprintf("%x", priv))
+		Log.Println("tronAddr: (" + fmt.Sprintf("%d", len(tronAddr)) + ") " + tronAddr)
+		Log.Println("******************* New Key Using ECDSA *******************")
+	}
 
 	return string(tronAddr)
 
@@ -101,8 +125,8 @@ func addressFromKey(keyStr string) {
 	rawAddr := append(addr41, checksum...)
 	tronAddr := base58.Encode(rawAddr)
 
-	fmt.Println("Private key: (" + fmt.Sprintf("%d", len(keyBytes)) + ") " + fmt.Sprintf("%x", keyBytes))
-	fmt.Println("tronAddr: (" + fmt.Sprintf("%d", len(tronAddr)) + ") " + tronAddr)
+	Log.Println("Private key: (" + fmt.Sprintf("%d", len(keyBytes)) + ") " + fmt.Sprintf("%x", keyBytes))
+	Log.Println("tronAddr: (" + fmt.Sprintf("%d", len(tronAddr)) + ") " + tronAddr)
 
-	fmt.Println("******************* Get Address from Key *******************")
+	Log.Println("******************* Get Address from Key *******************")
 }
